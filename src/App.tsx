@@ -503,7 +503,7 @@ export default function App() {
         </div>
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
             <SortableContext items={facilities.map(f => f.id)} strategy={verticalListSortingStrategy}>
               <AnimatePresence>
                 {facilities.map((f) => (
@@ -581,28 +581,28 @@ export default function App() {
     });
 
     return (
-      <div className="p-2 max-w-full overflow-hidden">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4 bg-white p-3 rounded-2xl shadow-sm border border-slate-200">
-          <div className="flex items-center gap-3">
-            <button onClick={() => setCurrentView('list')} className="p-2 hover:bg-slate-100 rounded-full text-slate-600"><ChevronLeft size={20} /></button>
-            <div>
-              <h1 className="text-xl font-bold text-slate-800 leading-tight">{selectedFacility.name}</h1>
-              <p className="text-slate-400 text-xs font-medium">주간 시간표</p>
+      <div className="p-2 md:p-4 max-w-full overflow-hidden">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-3 mb-4 bg-white p-3 rounded-2xl shadow-sm border border-slate-200">
+          <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto">
+            <button onClick={() => setCurrentView('list')} className="p-1.5 hover:bg-slate-100 rounded-full text-slate-600"><ChevronLeft size={18} /></button>
+            <div className="truncate">
+              <h1 className="text-lg md:text-xl font-bold text-slate-800 leading-tight truncate">{selectedFacility.name}</h1>
+              <p className="text-slate-400 text-[9px] md:text-xs font-medium">주간 시간표</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
+          <div className="flex flex-wrap items-center justify-between md:justify-end gap-2 md:gap-4 w-full md:w-auto">
+            <div className="flex items-center gap-1 bg-slate-100 p-0.5 md:p-1 rounded-xl">
               <button 
                 onClick={() => {
                   const newDate = new Date(currentDate);
                   newDate.setDate(newDate.getDate() - 7);
                   setCurrentDate(newDate);
                 }} 
-                className="p-1 px-2 hover:bg-white rounded-lg"
+                className="p-1 hover:bg-white rounded-lg"
               >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={14} />
               </button>
-              <span className="font-bold text-slate-700 text-sm px-2">
+              <span className="font-bold text-slate-700 text-[10px] md:text-sm px-1 md:px-2">
                 {weekDates[0].getMonth() + 1}/{weekDates[0].getDate()} ~ {weekDates[4].getMonth() + 1}/{weekDates[4].getDate()}
               </span>
               <button 
@@ -611,20 +611,20 @@ export default function App() {
                   newDate.setDate(newDate.getDate() + 7);
                   setCurrentDate(newDate);
                 }} 
-                className="p-1 px-2 hover:bg-white rounded-lg"
+                className="p-1 hover:bg-white rounded-lg"
               >
-                <ChevronRight size={16} />
+                <ChevronRight size={14} />
               </button>
             </div>
-            <div className="flex gap-2">
-              <button onClick={() => setCurrentView('calendar')} className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-xl text-xs font-bold flex items-center gap-1"><CalendarIcon size={14} />월간 보기</button>
-              <button onClick={() => setCurrentView('list')} className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold">홈으로</button>
+            <div className="flex gap-1 md:gap-2">
+              <button onClick={() => setCurrentView('calendar')} className="px-2 md:px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold flex items-center gap-1 border border-blue-100"><CalendarIcon size={12} className="md:w-3.5 md:h-3.5" /> <span className="hidden xs:inline">월간</span></button>
+              <button onClick={() => setCurrentView('list')} className="px-2 md:px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg md:rounded-xl text-[10px] md:text-xs font-bold border border-slate-200">홈</button>
             </div>
           </div>
         </div>
 
-        <div className="overflow-auto rounded-2xl border border-slate-200 shadow-sm bg-white max-h-[calc(100vh-250px)] relative scrollbar-hide">
-          <div className="min-w-[550px] md:min-w-[800px] grid grid-cols-[50px_repeat(5,1fr)] md:grid-cols-[80px_repeat(5,1fr)]" style={{ gridTemplateRows: `auto repeat(${TIME_SLOTS.length}, minmax(50px, auto))` }}>
+        <div className="overflow-auto rounded-2xl border border-slate-200 shadow-sm bg-white max-h-[calc(100vh-280px)] md:max-h-[calc(100vh-250px)] relative scrollbar-hide">
+          <div className="min-w-[500px] md:min-w-[800px] grid grid-cols-[45px_repeat(5,1fr)] md:grid-cols-[80px_repeat(5,1fr)]" style={{ gridTemplateRows: `auto repeat(${TIME_SLOTS.length}, minmax(45px, auto))` }}>
             {/* Header Row */}
             <div className="p-2 md:p-3 border-r border-b border-slate-200 bg-slate-50 font-bold text-slate-400 text-center text-[9px] md:text-[10px] uppercase tracking-wider sticky top-0 left-0 z-40">Time</div>
             {weekDates.map((date, i) => (
@@ -683,9 +683,9 @@ export default function App() {
                         setIsReservationModalOpen(true);
                       }}
                     >
-                      <div className={`h-full border-2 ${color?.border} ${color?.bg} rounded-xl p-2 shadow-sm flex flex-col transition-transform hover:scale-[1.01] active:scale-100 cursor-pointer overflow-hidden`}>
-                        <div className={`text-[12px] font-black ${color?.text} leading-tight mb-auto break-all line-clamp-4 uppercase tracking-tighter`}>{res.reason || "예약 사유 없음"}</div>
-                        <div className={`text-[10px] ${color?.text} font-bold opacity-70 flex items-center gap-1 mt-1`}><User size={10} strokeWidth={3} />{res.teacherName}</div>
+                      <div className={`h-full border ${color?.border} ${color?.bg} rounded-lg md:rounded-xl p-1 md:p-2 shadow-sm flex flex-col transition-transform hover:scale-[1.01] active:scale-100 cursor-pointer overflow-hidden`}>
+                        <div className={`text-[10px] md:text-[12px] font-black ${color?.text} leading-tight mb-auto break-all line-clamp-3 md:line-clamp-4 uppercase tracking-tighter`}>{res.reason || "예약 사유 없음"}</div>
+                        <div className={`text-[8px] md:text-[10px] ${color?.text} font-bold opacity-70 flex items-center gap-1 mt-0.5 md:mt-1 truncate`}><User size={8} strokeWidth={3} className="md:w-2.5 md:h-2.5" />{res.teacherName}</div>
                       </div>
                     </div>
                   );
@@ -853,25 +853,25 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-20">
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-6 py-4 flex justify-between items-center shadow-sm">
-        <div className="flex items-center gap-3 cursor-pointer" onClick={() => setCurrentView('list')}>
-          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-100"><School size={22} /></div>
+      <header className="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30 px-4 md:px-6 py-3 md:py-4 flex justify-between items-center shadow-sm">
+        <div className="flex items-center gap-2 md:gap-3 cursor-pointer" onClick={() => setCurrentView('list')}>
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-600 rounded-lg md:rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-100"><School size={18} className="md:w-5.5 md:h-5.5" /></div>
           <div className="flex flex-col">
-            <h1 className="text-xl font-black tracking-tighter leading-none flex items-baseline">
-              <span className="text-slate-900 mr-1.5">인비고</span>
+            <h1 className="text-lg md:text-xl font-black tracking-tighter leading-none flex items-baseline">
+              <span className="text-slate-900 mr-1 md:mr-1.5">인비고</span>
               <span className="text-blue-600">자리ON</span>
               {isAdmin && (
-                <span className="ml-2 px-1.5 py-0.5 bg-slate-900 text-white text-[9px] font-black rounded uppercase tracking-tighter shadow-sm">
-                  ADMIN
+                <span className="ml-1.5 px-1 md:px-1.5 py-0.5 bg-slate-900 text-white text-[8px] md:text-[9px] font-black rounded uppercase tracking-tighter shadow-sm">
+                  AD
                 </span>
               )}
             </h1>
-            <span className="text-[10px] font-bold text-slate-400 mt-0.5">학교 시설 예약 시스템</span>
+            <span className="text-[9px] md:text-[10px] font-bold text-slate-400 mt-0.5">학교 시설 예약 시스템</span>
           </div>
         </div>
-        <div className="flex items-center gap-2 md:gap-4">
-          <button onClick={() => setCurrentView('global_calendar')} className="flex px-3 md:px-4 py-2 bg-slate-50 text-slate-600 rounded-xl text-xs md:text-sm font-bold items-center gap-2 border border-slate-100 shadow-sm"><CalendarIcon size={16} /> <span className="hidden sm:inline">전체 예약 현황</span><span className="sm:hidden">전체</span></button>
-          <button onClick={handleAdminToggle} className={`px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold flex items-center gap-2 transition-all border ${isAdmin ? "bg-amber-100 text-amber-700 border-amber-200" : "bg-slate-100 text-slate-600 border-slate-200"}`}><Settings size={14} />{isAdmin ? "관리자" : "설정"}</button>
+        <div className="flex items-center gap-1.5 md:gap-4">
+          <button onClick={() => setCurrentView('global_calendar')} className="flex px-2 md:px-4 py-2 bg-slate-50 text-slate-600 rounded-lg md:rounded-xl text-[10px] md:text-sm font-bold items-center gap-1 md:gap-2 border border-slate-100 shadow-sm"><CalendarIcon size={14} className="md:w-4 md:h-4" /> <span className="hidden xs:inline">전체 현황</span><span className="xs:hidden">현황</span></button>
+          <button onClick={handleAdminToggle} className={`px-2 md:px-4 py-2 rounded-lg md:rounded-xl text-[10px] md:text-sm font-bold flex items-center gap-1 md:gap-2 transition-all border ${isAdmin ? "bg-amber-100 text-amber-700 border-amber-200" : "bg-slate-100 text-slate-600 border-slate-200"}`}><Settings size={14} className="md:w-3.5 md:h-3.5" />{isAdmin ? "관리" : "설정"}</button>
         </div>
       </header>
 
@@ -912,32 +912,32 @@ export default function App() {
         {isReservationModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsReservationModalOpen(false)} className="absolute inset-0 bg-slate-900/60" />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative bg-white rounded-3xl p-8 w-full max-w-lg" onClick={e => e.stopPropagation()}>
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="relative bg-white rounded-3xl p-6 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
               {isResSuccess ? (
-                <div className="text-center py-12"><h4 className="text-2xl font-black mb-2 text-green-600">예약 완료!</h4><p>정상적으로 처리되었습니다.</p></div>
+                <div className="text-center py-12"><h4 className="text-2xl font-black mb-2 text-green-600">예약 완료!</h4><p className="text-slate-500">정상적으로 처리되었습니다.</p></div>
               ) : (
                 <form onSubmit={addReservation} className="space-y-4">
-                  <h3 className="text-xl font-bold mb-4">{isEditingRes ? '예약 상세' : '예약 신청'}</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 bg-blue-50/50 rounded-xl font-bold text-xs text-blue-700">날짜: {pendingRes?.date}</div>
-                    <div className="p-3 bg-amber-50/50 rounded-xl font-bold text-xs text-amber-700 truncate">시설: {facilities.find(f => f.id === pendingRes?.fId)?.name}</div>
+                  <h3 className="text-lg md:text-xl font-bold mb-4">{isEditingRes ? '예약 상세 및 수정' : '예약 신청'}</h3>
+                  <div className="grid grid-cols-2 gap-2 md:gap-3">
+                    <div className="p-3 bg-blue-50/50 rounded-xl font-bold text-[10px] md:text-xs text-blue-700 border border-blue-100">날짜: {pendingRes?.date}</div>
+                    <div className="p-3 bg-amber-50/50 rounded-xl font-bold text-[10px] md:text-xs text-amber-700 truncate border border-amber-100">시설: {facilities.find(f => f.id === pendingRes?.fId)?.name}</div>
                   </div>
                   
                   <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 ml-1 uppercase">예약 사유</label>
-                    <input type="text" value={reasonInput} onChange={e => setReasonInput(e.target.value)} placeholder="예약 내용을 입력하세요" required className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none focus:border-blue-200 transition-colors" />
+                    <input type="text" value={reasonInput} onChange={e => setReasonInput(e.target.value)} placeholder="예약 내용을 입력하세요" required className="w-full px-4 py-2 md:py-2.5 bg-slate-50 border border-slate-100 rounded-xl font-bold text-xs md:text-sm outline-none focus:border-blue-200 transition-colors" />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-400 ml-1 uppercase">신청인</label>
-                      <input type="text" value={teacherNameInput} onChange={e => setTeacherNameInput(e.target.value)} placeholder="성함" required className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl font-bold text-sm outline-none focus:border-blue-200 transition-colors" />
+                      <input type="text" value={teacherNameInput} onChange={e => setTeacherNameInput(e.target.value)} placeholder="성함" required className="w-full px-4 py-2 md:py-2.5 bg-slate-50 border border-slate-100 rounded-xl font-bold text-xs md:text-sm outline-none focus:border-blue-200 transition-colors" />
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-black text-slate-400 ml-1 uppercase">예약 유형</label>
-                      <div className="flex gap-1">
-                        <button type="button" onClick={() => setRepeatInput('none')} className={`flex-1 py-1.5 rounded-lg text-[10px] font-black transition-all ${repeatInput === 'none' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-400'}`}>한 번</button>
-                        <button type="button" onClick={() => setRepeatInput('weekly')} className={`flex-1 py-1.5 rounded-lg text-[10px] font-black transition-all ${repeatInput === 'weekly' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400'}`}>반복</button>
+                      <div className="flex gap-1 bg-slate-100 p-1 rounded-xl">
+                        <button type="button" onClick={() => setRepeatInput('none')} className={`flex-1 py-1.5 rounded-lg text-[10px] font-black transition-all ${repeatInput === 'none' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400'}`}>단일</button>
+                        <button type="button" onClick={() => setRepeatInput('weekly')} className={`flex-1 py-1.5 rounded-lg text-[10px] font-black transition-all ${repeatInput === 'weekly' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-400'}`}>반복</button>
                       </div>
                     </div>
                   </div>
@@ -962,20 +962,19 @@ export default function App() {
                                   setEndSlotInput(i);
                                 }
                               } else {
-                                // If already a range, clicking any slot resets to that single slot
                                 setStartSlotInput(i);
                                 setEndSlotInput(i);
                               }
                             }}
-                            className={`py-2 rounded-lg text-[11px] font-bold transition-all border relative ${
+                            className={`py-1.5 md:py-2 rounded-lg text-[9px] md:text-[11px] font-bold transition-all border relative ${
                               isBound ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 
                               isSelected ? 'bg-blue-50 text-blue-600 border-blue-100' : 
                               'bg-white text-slate-400 border-slate-100 hover:border-slate-200'
                             }`}
                           >
-                            {s.split(' ')[0]}
-                            {isStart && <span className="absolute -top-1 -left-1 bg-white text-blue-600 text-[8px] px-1 rounded border border-blue-200 shadow-sm">S</span>}
-                            {isEnd && <span className="absolute -top-1 -right-1 bg-white text-blue-600 text-[8px] px-1 rounded border border-blue-200 shadow-sm">E</span>}
+                            <span className="truncate block px-0.5">{s.replace('교시', '').replace('시간', '')}</span>
+                            {isStart && <span className="absolute -top-1 -left-1 bg-white text-blue-600 text-[7px] px-1 rounded border border-blue-200 shadow-sm">S</span>}
+                            {isEnd && <span className="absolute -top-1 -right-1 bg-white text-blue-600 text-[7px] px-1 rounded border border-blue-200 shadow-sm">E</span>}
                           </button>
                         );
                       })}
