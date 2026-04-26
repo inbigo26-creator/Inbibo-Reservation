@@ -269,6 +269,7 @@ export default function App() {
   const [selectedFacility, setSelectedFacility] = useState<Facility | null>(null);
   const [pendingRes, setPendingRes] = useState<{fId: string, date: string, slot: number} | null>(null);
   const [isResSuccess, setIsResSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -367,9 +368,77 @@ export default function App() {
   const addReservation = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!teacherNameInput || !pendingRes) return;
+    setErrorMessage(null);
 
     try {
       const duration = endSlotInput - startSlotInput + 1;
+      
+      // Conflict Check
+      const conflict = reservations.find(r => {
+        if (r.facilityId !== pendingRes.fId) return false;
+        if (isEditingRes && r.id === editingResId) return false;
+
+        const currentStart = startSlotInput;
+        const currentEnd = endSlotInput;
+        const rStart = r.timeSlot;
+        const rEnd = r.timeSlot + r.duration - 1;
+
+        // Check if slots overlap
+        const slotsOverlap = (currentStart <= rEnd && currentEnd >= rStart);
+        if (!slotsOverlap) return false;
+
+        // Check date overlap
+        const currentSelectedDate = new Date(pendingRes.date);
+        const rDate = new Date(r.date);
+        
+        // Both are single date
+        if (repeatInput === 'none' && (!r.repeat || r.repeat === 'none')) {
+          return r.date === pendingRes.date;
+        }
+
+        // Check repeat overlap logic
+        const getDatesOverlap = () => {
+          // If both are weekly on same day
+          if (repeatInput === 'weekly' && r.repeat === 'weekly') {
+            if (currentSelectedDate.getDay() !== rDate.getDay()) return false;
+            // Check if periods overlap
+            const currentUntil = repeatUntilInput ? new Date(repeatUntilInput) : new Date(8640000000000000); 
+            const rUntil = r.repeatUntil ? new Date(r.repeatUntil) : new Date(8640000000000000);
+            return currentSelectedDate <= rUntil && rDate <= currentUntil;
+          }
+          
+          // Current is weekly, R is single
+          if (repeatInput === 'weekly') {
+            if (currentSelectedDate.getDay() !== rDate.getDay()) return false;
+            if (rDate < currentSelectedDate) return false;
+            if (repeatUntilInput && rDate > new Date(repeatUntilInput)) return false;
+            return true;
+          }
+
+          // Current is single, R is weekly
+          if (r.repeat === 'weekly') {
+            if (currentSelectedDate.getDay() !== rDate.getDay()) return false;
+            if (currentSelectedDate < rDate) return false;
+            if (r.repeatUntil && currentSelectedDate > new Date(r.repeatUntil)) return false;
+            return true;
+          }
+
+          return false;
+        };
+
+        return getDatesOverlap();
+      });
+
+      if (conflict) {
+        const conflictDate = conflict.repeat === 'weekly' ? `${DAYS[new Date(conflict.date).getDay()]}요일 반복` : conflict.date;
+        const conflictTime = conflict.duration > 1 
+          ? `${TIME_SLOTS[conflict.timeSlot]} ~ ${TIME_SLOTS[conflict.timeSlot + conflict.duration - 1]}`
+          : TIME_SLOTS[conflict.timeSlot];
+        
+        setErrorMessage(`이미 예약된 시간입니다. (${conflictDate}, ${conflictTime} - ${conflict.teacherName})`);
+        return;
+      }
+
       const data: any = {
         facilityId: pendingRes.fId,
         date: pendingRes.date,
@@ -554,14 +623,14 @@ export default function App() {
           </div>
         </div>
 
-        <div className="overflow-auto rounded-2xl border border-slate-200 shadow-sm bg-white max-h-[calc(100vh-250px)] relative">
-          <div className="min-w-[800px] grid grid-cols-[80px_repeat(5,1fr)]" style={{ gridTemplateRows: `auto repeat(${TIME_SLOTS.length}, minmax(80px, auto))` }}>
+        <div className="overflow-auto rounded-2xl border border-slate-200 shadow-sm bg-white max-h-[calc(100vh-250px)] relative scrollbar-hide">
+          <div className="min-w-[550px] md:min-w-[800px] grid grid-cols-[50px_repeat(5,1fr)] md:grid-cols-[80px_repeat(5,1fr)]" style={{ gridTemplateRows: `auto repeat(${TIME_SLOTS.length}, minmax(50px, auto))` }}>
             {/* Header Row */}
-            <div className="p-3 border-r border-b border-slate-200 bg-slate-50/50 font-bold text-slate-400 text-center text-[10px] uppercase tracking-wider sticky top-0 left-0 z-30">Time</div>
+            <div className="p-2 md:p-3 border-r border-b border-slate-200 bg-slate-50 font-bold text-slate-400 text-center text-[9px] md:text-[10px] uppercase tracking-wider sticky top-0 left-0 z-40">Time</div>
             {weekDates.map((date, i) => (
-              <div key={i} className="p-3 border-r border-b border-slate-200 bg-slate-50/50 text-center sticky top-0 z-20">
-                <div className="text-[10px] font-bold text-slate-400 uppercase leading-none mb-1">{DAYS[i]}</div>
-                <div className={`text-sm font-black ${formatDate(date) === formatDate(new Date()) ? "text-blue-600" : "text-slate-800"}`}>{date.getMonth() + 1}/{date.getDate()}</div>
+              <div key={i} className="p-2 md:p-3 border-r border-b border-slate-200 bg-slate-50 text-center sticky top-0 z-10">
+                <div className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase leading-none mb-1">{DAYS[i]}</div>
+                <div className={`text-xs md:text-sm font-black ${formatDate(date) === formatDate(new Date()) ? "text-blue-600" : "text-slate-800"}`}>{date.getMonth() + 1}/{date.getDate()}</div>
               </div>
             ))}
 
@@ -569,7 +638,7 @@ export default function App() {
             {TIME_SLOTS.map((slot, slotIdx) => (
               <div 
                 key={`time-${slotIdx}`} 
-                className={`p-2 border-r border-b border-slate-100 flex items-center justify-center text-[11px] font-bold sticky left-0 z-10 ${slot.includes("점심") ? "bg-amber-50 text-amber-700" : "bg-white text-slate-500"}`}
+                className={`p-1 md:p-2 border-r border-b border-slate-100 flex items-center justify-center text-[9px] md:text-[11px] font-bold sticky left-0 z-30 ${slot.includes("점심") ? "bg-amber-50 text-amber-700" : "bg-white text-slate-500"}`}
                 style={{ gridRow: slotIdx + 2, gridColumn: 1 }}
               >
                 {slot}
@@ -605,6 +674,7 @@ export default function App() {
                         gridRow: `${slotIdx + 2} / span ${res.duration}` 
                       }}
                       onClick={() => {
+                        setErrorMessage(null);
                         setEditingResId(res.id); setIsEditingRes(true);
                         setTeacherNameInput(res.teacherName); setReasonInput(res.reason);
                         setStartSlotInput(res.timeSlot); setEndSlotInput(res.timeSlot + res.duration - 1);
@@ -631,6 +701,7 @@ export default function App() {
                     className="p-1 border-r border-b border-slate-100 relative group hover:bg-slate-50/80 cursor-pointer"
                     style={{ gridColumn: dayIdx + 2, gridRow: slotIdx + 2 }}
                     onClick={() => {
+                      setErrorMessage(null);
                       setEditingResId(null); setIsEditingRes(false);
                       setTeacherNameInput(''); setReasonInput('');
                       setStartSlotInput(slotIdx); setEndSlotInput(slotIdx);
@@ -798,9 +869,9 @@ export default function App() {
             <span className="text-[10px] font-bold text-slate-400 mt-0.5">학교 시설 예약 시스템</span>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <button onClick={() => setCurrentView('global_calendar')} className="hidden md:flex px-4 py-2 bg-slate-50 text-slate-600 rounded-xl text-sm font-bold items-center gap-2"><CalendarIcon size={18} />전체 예약 현황</button>
-          <button onClick={handleAdminToggle} className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all ${isAdmin ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600"}`}><Settings size={16} />{isAdmin ? "관리자 (ON)" : "설정"}</button>
+        <div className="flex items-center gap-2 md:gap-4">
+          <button onClick={() => setCurrentView('global_calendar')} className="flex px-3 md:px-4 py-2 bg-slate-50 text-slate-600 rounded-xl text-xs md:text-sm font-bold items-center gap-2 border border-slate-100 shadow-sm"><CalendarIcon size={16} /> <span className="hidden sm:inline">전체 예약 현황</span><span className="sm:hidden">전체</span></button>
+          <button onClick={handleAdminToggle} className={`px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold flex items-center gap-2 transition-all border ${isAdmin ? "bg-amber-100 text-amber-700 border-amber-200" : "bg-slate-100 text-slate-600 border-slate-200"}`}><Settings size={14} />{isAdmin ? "관리자" : "설정"}</button>
         </div>
       </header>
 
@@ -925,6 +996,17 @@ export default function App() {
                       />
                     </div>
                   )}
+
+                  {errorMessage && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }} 
+                      animate={{ opacity: 1, y: 0 }} 
+                      className="bg-rose-50 text-rose-600 text-[11px] font-bold p-3 rounded-xl border border-rose-100 flex items-center gap-2"
+                    >
+                      <X size={14} className="bg-rose-600 text-white rounded-full p-0.5" />
+                      {errorMessage}
+                    </motion.div>
+                  )}
                   
                   <div className="flex gap-2 mt-4">
                     {isEditingRes && (
@@ -938,7 +1020,7 @@ export default function App() {
                       )
                     )}
                     {!pendingDeleteRes && (
-                      <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl shadow-lg shadow-blue-100 transition-all active:scale-[0.98]">
+                      <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl shadow-lg shadow-blue-100 transition-all active:scale-[0.98] truncate whitespace-nowrap px-2">
                         {isEditingRes ? '내용 저장' : '예약 완료'}
                       </button>
                     )}
@@ -969,11 +1051,11 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      <footer className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex justify-center items-center gap-2 text-slate-400 text-[10px] font-medium shadow-sm z-30">
-        <School size={12} />
-        <span>학교 시설 예약 시스템 v1.0.1</span>
-        <span className="mx-2 opacity-30">|</span>
-        <span>&copy; 2026 <strong className="text-slate-500">INBIGO</strong> All Rights Reserved.</span>
+      <footer className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t p-3 md:p-4 flex justify-center items-center gap-2 text-slate-400 text-[9px] md:text-[10px] font-medium shadow-sm z-30">
+        <School size={10} className="md:w-3 md:h-3" />
+        <span>인비고 자리ON v1.0.1</span>
+        <span className="mx-1 md:mx-2 opacity-30">|</span>
+        <span className="truncate">&copy; 2026 <strong className="text-slate-500">INBIGO</strong> All Rights Reserved.</span>
       </footer>
     </div>
   );
